@@ -1,0 +1,3 @@
+# Hisense TV MQTT Bridge Dependencies
+paho-mqtt>=2.0.0
+PyYAML>=6.0

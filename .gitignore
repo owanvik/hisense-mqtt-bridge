@@ -1,0 +1,32 @@
+# Sertifikater og nøkler (sensitive)
+*.cer
+*.pem
+*.pkcs8
+*.key
+.certs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Zip-filer med nøkler
+hi_keys.zip
+
+# Lokale tester med hardkodet data
+test_data.py
