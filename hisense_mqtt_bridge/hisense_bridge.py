@@ -22,7 +22,7 @@ import logging
 import socket
 from typing import Dict, Any, Optional
 
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 
 # ============================================================================
 # EMBEDDED CERTIFICATES - Standard RemoteNOW certs (same for all Hisense TVs)
@@ -309,18 +309,24 @@ class HisenseBridge:
             payload = json.loads(msg.payload.decode())
             
             if "volumechange" in msg.topic and payload.get("volume_type") == 0:
-                self.current_volume = payload.get("volume_value", 0)
-                logger.info(f"🔊 Volume: {self.current_volume}")
-                self.publish_ha_state()
+                new_volume = payload.get("volume_value", 0)
+                if new_volume != self.current_volume:
+                    self.current_volume = new_volume
+                    logger.info(f"🔊 Volume: {self.current_volume}")
+                    self.publish_ha_state()
             
             elif "volumechange" in msg.topic and payload.get("volume_type") == 2:
-                self.is_muted = payload.get("volume_value") == 1
-                logger.info(f"🔇 Muted: {self.is_muted}")
+                new_muted = payload.get("volume_value") == 1
+                if new_muted != self.is_muted:
+                    self.is_muted = new_muted
+                    logger.info(f"🔇 Muted: {self.is_muted}")
             
             elif "state" in msg.topic and payload.get("statetype") == "sourceswitch":
-                self.current_source = payload.get("sourcename")
-                logger.info(f"📺 Source: {self.current_source}")
-                self.publish_ha_state()
+                new_source = payload.get("sourcename")
+                if new_source != self.current_source:
+                    self.current_source = new_source
+                    logger.info(f"📺 Source: {self.current_source}")
+                    self.publish_ha_state()
                 
         except (json.JSONDecodeError, KeyError):
             pass
