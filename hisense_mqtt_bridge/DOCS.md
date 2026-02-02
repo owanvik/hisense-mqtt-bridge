@@ -51,15 +51,15 @@ Control your Hisense Smart TV from Home Assistant via MQTT.
 ## Example Configuration
 
 ```yaml
-tv_ip: "10.0.0.109"
+tv_ip: "192.168.1.100"
 tv_port: 36669
 tv_client_id: "HomeAssistant"
 mqtt_host: "core-mosquitto"
 mqtt_port: 1883
 mqtt_username: ""
 mqtt_password: ""
-device_id: "hisense_stue"
-device_name: "Hisense Stue"
+device_id: "hisense_living_room"
+device_name: "Hisense Living Room"
 volume_max: 30
 ```
 

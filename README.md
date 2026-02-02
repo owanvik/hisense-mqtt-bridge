@@ -1,96 +1,91 @@
-# Hisense TV MQTT Controller
+# Hisense TV MQTT Bridge for Home Assistant
 
 [![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fowanvik%2Fhisense-mqtt-bridge)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Kontroller din Hisense Smart TV via den innebygde MQTT brokeren.
+Control your Hisense Smart TV via the built-in MQTT broker.
 
 ## 🏠 Home Assistant Add-on
 
-Klikk knappen over for å installere add-on direkte i Home Assistant!
+Click the button above to install the add-on directly in Home Assistant!
 
-**Funksjoner:**
-- 🔊 Volumkontroll (slider + knapper)
-- 📺 Kildevalg (TV, HDMI1-3, AV)
-- 🎮 Navigasjonsknapper
-- 🔁 Auto-reconnect når TV slås av/på
+**Features:**
+- 🔊 Volume control (slider + buttons)
+- 📺 Source selection (TV, HDMI1-3, AV)
+- 🎮 Navigation buttons
+- ▶️ Media controls (Play, Pause, Stop)
+- ⚡ Power on/off
+- 🔁 Auto-reconnect when TV powers on/off
+- 🔄 Real-time sync with physical remote
 
----
+## Requirements
 
-## Din TV
+- Hisense Smart TV with RemoteNOW/VIDAA support
+- Home Assistant with Mosquitto MQTT broker add-on
+- Home Assistant Supervisor (for add-on installation)
 
-| Parameter | Verdi |
-|-----------|-------|
-| **Navn** | Stue |
-| **IP** | `10.0.0.109` |
-| **MAC (Ethernet)** | `a0:62:fb:1b:f2:e1` |
-| **MAC (WiFi)** | `30:32:35:dc:e9:f8` |
-| **transport_protocol** | `2152` |
-| **VIDAA Support** | Ja |
+**Note:** SSL certificates are embedded - no manual extraction needed!
 
-## Developer Credentials
+## Installation
 
-Hisense TV-er har en innebygd MQTT broker med følgende tilkoblingsdetaljer:
+1. Click the **Add to Home Assistant** button above, or:
+2. Go to **Settings → Add-ons → Add-on Store → ⋮ → Repositories**
+3. Add: `https://github.com/owanvik/hisense-mqtt-bridge`
+4. Click **Add** and refresh
+5. Find **Hisense TV MQTT Bridge** and click **Install**
+6. Configure your TV IP and MQTT credentials
+7. **Start** the add-on
 
-| Parameter | Verdi |
+## Configuration
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `tv_ip` | IP address of your Hisense TV | *Required* |
+| `tv_port` | MQTT port on TV | `36669` |
+| `mqtt_host` | MQTT broker hostname | `core-mosquitto` |
+| `mqtt_username` | MQTT username | *Optional* |
+| `mqtt_password` | MQTT password | *Optional* |
+| `device_name` | Friendly name in HA | `Hisense TV` |
+| `volume_max` | Maximum volume level | `30` |
+
+## TV Credentials
+
+Hisense TVs have a built-in MQTT broker with these connection details:
+
+| Parameter | Value |
 |-----------|-------|
 | **Port** | `36669` |
 | **Username** | `hisenseservice` |
 | **Password** | `multimqttservice` |
-| **Klientsertifikat** | `rcm_certchain_pem.cer` |
-| **Klientnøkkel** | `rcm_pem_privkey.pkcs8` |
-
-## Installasjon
-
-```bash
-cd Hisense
-pip install -r requirements.txt
-```
-
-## Bruk
-
-1. Finn IP-adressen til TV-en din (Innstillinger → Nettverk)
-2. Rediger `TV_IP` i `hisense_mqtt.py`
-3. Kjør scriptet:
-
-```bash
-python hisense_mqtt.py
-```
-
-## Autentisering
-
-Noen nyere Hisense TV-er krever autentisering:
-
-1. Kjør scriptet og koble til
-2. TV-en vil vise en 4-sifret kode
-3. Velg "Autentiser" og skriv inn koden
-4. Deretter kan du sende kommandoer
+| **Client Certificate** | `rcm_certchain_pem.cer` |
+| **Client Key** | `rcm_pem_privkey.pkcs8` |
 
 ## MQTT Topics
 
-### Publish (send til TV)
+### Publish (send to TV)
 
-| Funksjon | Topic |
+| Function | Topic |
 |----------|-------|
-| Hent TV-status | `/remoteapp/tv/ui_service/{CLIENT}/actions/gettvstate` |
-| Hent kilder | `/remoteapp/tv/ui_service/{CLIENT}/actions/sourcelist` |
-| Hent apper | `/remoteapp/tv/ui_service/{CLIENT}/actions/applist` |
-| Hent volum | `/remoteapp/tv/platform_service/{CLIENT}/actions/getvolume` |
-| Endre volum | `/remoteapp/tv/platform_service/{CLIENT}/actions/changevolume` |
-| Send tastetrykk | `/remoteapp/tv/remote_service/{CLIENT}/actions/sendkey` |
-| Start app | `/remoteapp/tv/ui_service/{CLIENT}/actions/launchapp` |
-| Bytt kilde | `/remoteapp/tv/ui_service/{CLIENT}/actions/changesource` |
-| Autentiser | `/remoteapp/tv/ui_service/{CLIENT}/actions/authenticationcode` |
+| Get TV state | `/remoteapp/tv/ui_service/{CLIENT}/actions/gettvstate` |
+| Get sources | `/remoteapp/tv/ui_service/{CLIENT}/actions/sourcelist` |
+| Get apps | `/remoteapp/tv/ui_service/{CLIENT}/actions/applist` |
+| Get volume | `/remoteapp/tv/platform_service/{CLIENT}/actions/getvolume` |
+| Change volume | `/remoteapp/tv/platform_service/{CLIENT}/actions/changevolume` |
+| Send key | `/remoteapp/tv/remote_service/{CLIENT}/actions/sendkey` |
+| Launch app | `/remoteapp/tv/ui_service/{CLIENT}/actions/launchapp` |
+| Change source | `/remoteapp/tv/ui_service/{CLIENT}/actions/changesource` |
+| Authenticate | `/remoteapp/tv/ui_service/{CLIENT}/actions/authenticationcode` |
 
-### Subscribe (motta fra TV)
+### Subscribe (receive from TV)
 
 | Data | Topic |
 |------|-------|
-| TV-status | `/remoteapp/mobile/broadcast/ui_service/state` |
-| Volum | `/remoteapp/mobile/broadcast/ui_service/volume` |
-| Kildeliste | `/remoteapp/mobile/{CLIENT}/ui_service/data/sourcelist` |
-| Appliste | `/remoteapp/mobile/{CLIENT}/ui_service/data/applist` |
+| TV state | `/remoteapp/mobile/broadcast/ui_service/state` |
+| Volume | `/remoteapp/mobile/broadcast/ui_service/volume` |
+| Source list | `/remoteapp/mobile/{CLIENT}/ui_service/data/sourcelist` |
+| App list | `/remoteapp/mobile/{CLIENT}/ui_service/data/applist` |
 
-## Tilgjengelige taster
+## Available Keys
 
 ```
 KEY_POWER, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
@@ -100,7 +95,7 @@ KEY_PLAY, KEY_PAUSE, KEY_STOP, KEY_FORWARDS, KEY_BACK,
 KEY_0 - KEY_9
 ```
 
-## Start apper
+## Launch Apps
 
 ```python
 # YouTube
@@ -113,38 +108,31 @@ KEY_0 - KEY_9
 {"name": "Amazon", "urlType": 37, "storeType": 0, "url": "amazon"}
 ```
 
-## Bytt kilde
+## Change Source
 
 ```python
 # TV
 {"sourceid": "0", "sourcename": "TV"}
 
-# HDMI 1
+# HDMI 1-4
 {"sourceid": "3", "sourcename": "HDMI 1"}
-
-# HDMI 2
 {"sourceid": "4", "sourcename": "HDMI 2"}
-
-# HDMI 3
 {"sourceid": "5", "sourcename": "HDMI 3"}
-
-# HDMI 4
 {"sourceid": "6", "sourcename": "HDMI 4"}
 ```
 
-## Testing med mosquitto
-
-Hvis du vil teste manuelt med `mosquitto_sub`/`mosquitto_pub`:
+## Testing with mosquitto
 
 ```bash
-# Installer mosquitto
-brew install mosquitto
+# Install mosquitto
+brew install mosquitto  # macOS
+apt install mosquitto-clients  # Linux
 
-# Subscribe til alle topics (med SSL)
+# Subscribe to all topics (with SSL)
 mosquitto_sub -h <TV_IP> -p 36669 -u hisenseservice -P multimqttservice \
   --capath /etc/ssl/certs --insecure -t '#' -v
 
-# Hent TV-status
+# Get TV status
 mosquitto_pub -h <TV_IP> -p 36669 -u hisenseservice -P multimqttservice \
   --capath /etc/ssl/certs --insecure \
   -t '/remoteapp/tv/ui_service/Test/actions/gettvstate' -m ''
@@ -152,7 +140,7 @@ mosquitto_pub -h <TV_IP> -p 36669 -u hisenseservice -P multimqttservice \
 
 ## Wake-on-LAN
 
-TV-en kan ikke slås på via MQTT (den er av). Bruk Wake-on-LAN med TV-ens MAC-adresse:
+The TV cannot be turned on via MQTT (it's off). Use Wake-on-LAN with the TV's MAC address:
 
 ```bash
 # macOS
@@ -160,14 +148,19 @@ brew install wakeonlan
 wakeonlan AA:BB:CC:DD:EE:FF
 ```
 
-## Kompatibilitet
+## Compatibility
 
-Testet med:
+Tested with:
 - Hisense 65P7
 - Hisense 75P7
 - Hisense VIDAA U 2.5+
 
-## Referanser
+## References
 
 - [mqtt-hisensetv](https://github.com/Krazy998/mqtt-hisensetv)
-- [hisensetv Python library](https://github.com/newAM/hisensetv) (arkivert)
+- [hisensetv Python library](https://github.com/newAM/hisensetv) (archived)
+- [Hisense MQTT Key Files](https://github.com/d3nd3/Hisense-mqtt-keyfiles)
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.

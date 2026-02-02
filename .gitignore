@@ -1,9 +1,12 @@
-# Sertifikater og nøkler (sensitive)
+# Certificates and keys (sensitive)
 *.cer
 *.pem
 *.pkcs8
 *.key
 .certs/
+
+# Local config
+config.yaml
 
 # Python
 __pycache__/
