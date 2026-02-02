@@ -460,6 +460,7 @@ class HisenseBridge:
         self.ha_client.on_message = self.on_ha_message
         
         logger.info(f"🔄 Connecting to TV at {self.tv_ip}...")
+        self.tv_client.loop_start()  # Start loop once
         self.connect_to_tv()
         
         time.sleep(2)
@@ -500,13 +501,11 @@ class HisenseBridge:
         """Attempt to connect to TV with error handling."""
         try:
             if test_tv_connection(self.tv_ip, self.tv_port):
+                # Only call connect - loop is already started
                 self.tv_client.connect(self.tv_ip, self.tv_port, 60)
-                self.tv_client.loop_start()
                 logger.info(f"📺 Connection attempt initiated")
             else:
                 logger.debug(f"📺 TV not reachable at {self.tv_ip}:{self.tv_port}")
-                if self.ha_client:
-                    self.ha_client.publish(f"{self.topic_prefix}/available", "offline", retain=True)
         except Exception as e:
             logger.debug(f"📺 Connection error: {e}")
     
