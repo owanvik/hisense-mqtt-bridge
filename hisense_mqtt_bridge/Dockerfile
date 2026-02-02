@@ -2,7 +2,7 @@ ARG BUILD_FROM
 FROM $BUILD_FROM
 
 # Install dependencies
-RUN apk add --no-cache python3 py3-pip
+RUN apk add --no-cache python3 py3-pip jq
 
 WORKDIR /app
 
