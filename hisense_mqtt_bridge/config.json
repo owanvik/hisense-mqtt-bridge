@@ -1,9 +1,10 @@
 {
   "name": "Hisense TV MQTT Bridge",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "slug": "hisense_mqtt_bridge",
   "description": "Bridge between Hisense TV and Home Assistant via MQTT",
   "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "init": false,
   "startup": "application",
   "boot": "auto",
   "options": {
