@@ -31,6 +31,5 @@
     "volume_max": "int"
   },
   "services": ["mqtt:need"],
-  "map": ["config:rw"],
-  "image": "ghcr.io/owanvik/hisense-mqtt-bridge-{arch}"
+  "map": ["config:rw"]
 }
