@@ -22,7 +22,7 @@ import logging
 import socket
 from typing import Dict, Any, Optional
 
-__version__ = "1.2.0"
+__version__ = "1.3.1"
 
 # ============================================================================
 # EMBEDDED CERTIFICATES - Standard RemoteNOW certs (same for all Hisense TVs)
