@@ -2,15 +2,17 @@ ARG BUILD_FROM
 FROM $BUILD_FROM
 
 # Install dependencies
-RUN apk add --no-cache python3 py3-pip jq
+RUN apk add --no-cache jq
 
 WORKDIR /app
 
 # Copy files
-COPY hisense_bridge.py requirements.txt ./
+COPY hisense_bridge.py requirements.txt run.sh ./
 
 # Install Python packages
-RUN pip3 install --no-cache-dir --break-system-packages paho-mqtt pyyaml
+RUN pip3 install --no-cache-dir paho-mqtt pyyaml
 
-# Copy s6-overlay service
-COPY rootfs /
+# Make run script executable
+RUN chmod a+x run.sh
+
+CMD ["/app/run.sh"]
