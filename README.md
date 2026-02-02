@@ -1,6 +1,20 @@
 # Hisense TV MQTT Controller
 
+[![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fowanvik%2Fhisense-mqtt-bridge)
+
 Kontroller din Hisense Smart TV via den innebygde MQTT brokeren.
+
+## 🏠 Home Assistant Add-on
+
+Klikk knappen over for å installere add-on direkte i Home Assistant!
+
+**Funksjoner:**
+- 🔊 Volumkontroll (slider + knapper)
+- 📺 Kildevalg (TV, HDMI1-3, AV)
+- 🎮 Navigasjonsknapper
+- 🔁 Auto-reconnect når TV slås av/på
+
+---
 
 ## Din TV
 

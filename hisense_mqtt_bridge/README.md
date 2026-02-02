@@ -1,6 +1,7 @@
 # Hisense TV MQTT Bridge for Home Assistant
 
-[![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz)
+[![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fowanvik%2Fhisense-mqtt-bridge)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Control your Hisense Smart TV from Home Assistant via MQTT Discovery.
@@ -13,25 +14,30 @@ Control your Hisense Smart TV from Home Assistant via MQTT Discovery.
 - ▶️ **Media Controls** - Play, Pause, Stop, Rewind, Fast Forward
 - ⚡ **Power Control** - Turn TV on/off
 - 🔄 **Real-time Sync** - Volume and source changes from physical remote are reflected in HA
+- 🔁 **Auto-reconnect** - Automatically reconnects when TV powers on/off
 
 ## Requirements
 
 - Hisense Smart TV with RemoteNOW/VIDAA support
-- Home Assistant with MQTT broker (Mosquitto recommended)
-- Python 3.8+
+- Home Assistant with Mosquitto MQTT broker add-on
+- Home Assistant Supervisor (for add-on installation)
 
-**Note:** SSL certificates are embedded in the script - no manual extraction needed!
+**Note:** SSL certificates are embedded - no manual extraction needed!
 
 ## Installation
 
-### Option 1: HACS (Recommended)
+### Home Assistant Add-on (Recommended)
 
-1. Open HACS in Home Assistant
-2. Click the three dots menu → **Custom repositories**
-3. Add `https://github.com/YOUR_USERNAME/hisense-mqtt-bridge` as an **Integration**
-4. Search for "Hisense TV MQTT Bridge" and install
+Click the button above or:
 
-### Option 2: Manual Installation
+1. Go to **Settings → Add-ons → Add-on Store → ⋮ → Repositories**
+2. Add: `https://github.com/owanvik/hisense-mqtt-bridge`
+3. Click **Add** and refresh
+4. Find **Hisense TV MQTT Bridge** and click **Install**
+5. Configure your TV IP and MQTT credentials
+6. **Start** the add-on
+
+### Manual Installation
 
 ```bash
 # Clone the repository
