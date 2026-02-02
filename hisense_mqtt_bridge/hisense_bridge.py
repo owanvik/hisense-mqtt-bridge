@@ -22,7 +22,7 @@ import logging
 import socket
 from typing import Dict, Any, Optional
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 # ============================================================================
 # EMBEDDED CERTIFICATES - Standard RemoteNOW certs (same for all Hisense TVs)
@@ -268,6 +268,9 @@ class HisenseBridge:
         self.current_source: Optional[str] = None
         self.tv_client: Optional[mqtt.Client] = None
         self.ha_client: Optional[mqtt.Client] = None
+        self.tv_connected = False
+        self.reconnect_interval = 10  # seconds
+        self._stop_event = False
     
     def tv_topic(self, service: str, action: str) -> str:
         return f"/remoteapp/tv/{service}/{self.tv_client_id}/actions/{action}"
@@ -282,9 +285,24 @@ class HisenseBridge:
         }
     
     def on_tv_connect(self, client, userdata, flags, rc, props=None):
-        logger.info("✅ Connected to TV")
-        client.subscribe("#")
-        client.publish(self.tv_topic("platform_service", "getvolume"), "")
+        if rc == 0:
+            logger.info("✅ Connected to TV")
+            self.tv_connected = True
+            client.subscribe("#")
+            client.publish(self.tv_topic("platform_service", "getvolume"), "")
+            # Update availability in HA
+            if self.ha_client:
+                self.ha_client.publish(f"{self.topic_prefix}/available", "online", retain=True)
+        else:
+            logger.warning(f"⚠️ TV connection failed with code: {rc}")
+            self.tv_connected = False
+    
+    def on_tv_disconnect(self, client, userdata, disconnect_flags, rc, props=None):
+        logger.warning(f"📺 Disconnected from TV (rc={rc})")
+        self.tv_connected = False
+        # Update availability in HA
+        if self.ha_client:
+            self.ha_client.publish(f"{self.topic_prefix}/available", "offline", retain=True)
     
     def on_tv_message(self, client, userdata, msg):
         try:
@@ -323,6 +341,11 @@ class HisenseBridge:
     def on_ha_message(self, client, userdata, msg):
         topic = msg.topic
         payload = msg.payload.decode()
+        
+        # Check if TV is connected before sending commands
+        if not self.tv_connected:
+            logger.warning(f"⚠️ Cannot send command - TV offline")
+            return
         
         if "button/volume_up" in topic:
             new_vol = min(self.current_volume + self.volume_step, self.volume_max)
@@ -423,7 +446,9 @@ class HisenseBridge:
         self.tv_client.tls_set(certfile=self.cert_file, keyfile=self.key_file, cert_reqs=ssl.CERT_NONE)
         self.tv_client.tls_insecure_set(True)
         self.tv_client.on_connect = self.on_tv_connect
+        self.tv_client.on_disconnect = self.on_tv_disconnect
         self.tv_client.on_message = self.on_tv_message
+        self.tv_client.reconnect_delay_set(min_delay=1, max_delay=30)
         
         self.ha_client = mqtt.Client(
             client_id=f"HisenseBridge_{self.device_id}", protocol=mqtt.MQTTv311,
@@ -435,12 +460,7 @@ class HisenseBridge:
         self.ha_client.on_message = self.on_ha_message
         
         logger.info(f"🔄 Connecting to TV at {self.tv_ip}...")
-        try:
-            self.tv_client.connect(self.tv_ip, self.tv_port, 60)
-            self.tv_client.loop_start()
-        except Exception as e:
-            logger.error(f"❌ TV connection failed: {e}")
-            sys.exit(1)
+        self.connect_to_tv()
         
         time.sleep(2)
         
@@ -458,19 +478,49 @@ class HisenseBridge:
         logger.info("=" * 50)
         
         try:
-            while True:
+            last_check = time.time()
+            while not self._stop_event:
                 time.sleep(1)
+                
+                # Periodic reconnect check every 10 seconds
+                if time.time() - last_check >= self.reconnect_interval:
+                    last_check = time.time()
+                    
+                    if not self.tv_connected:
+                        logger.info(f"🔄 TV offline, attempting reconnect...")
+                        self.connect_to_tv()
+                    elif self.tv_client and self.tv_client.is_connected():
+                        # Request volume to verify connection and update state
+                        self.tv_client.publish(self.tv_topic("platform_service", "getvolume"), "")
+                        
         except KeyboardInterrupt:
             self.stop()
     
+    def connect_to_tv(self):
+        """Attempt to connect to TV with error handling."""
+        try:
+            if test_tv_connection(self.tv_ip, self.tv_port):
+                self.tv_client.connect(self.tv_ip, self.tv_port, 60)
+                self.tv_client.loop_start()
+                logger.info(f"📺 Connection attempt initiated")
+            else:
+                logger.debug(f"📺 TV not reachable at {self.tv_ip}:{self.tv_port}")
+                if self.ha_client:
+                    self.ha_client.publish(f"{self.topic_prefix}/available", "offline", retain=True)
+        except Exception as e:
+            logger.debug(f"📺 Connection error: {e}")
+    
     def stop(self):
         logger.info("\n👋 Stopping...")
+        self._stop_event = True
         if self.ha_client:
             self.ha_client.publish(f"{self.topic_prefix}/available", "offline", retain=True)
             time.sleep(0.5)
             self.ha_client.loop_stop()
+            self.ha_client.disconnect()
         if self.tv_client:
             self.tv_client.loop_stop()
+            self.tv_client.disconnect()
         logger.info("✅ Stopped")
 
 
